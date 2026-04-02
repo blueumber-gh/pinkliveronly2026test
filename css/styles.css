@@ -568,13 +568,13 @@ width: 100%;
 
 @media screen and (orientation: portrait) and (max-width: 600px) {
   .hero {
-    min-height: 60vh;
+    min-height: 50vh;
   }
   .mainCharacter {
   bottom: -1%;
   }
   .mainCharacter img {
-  width: 90%;
+  width: 95%;
   }
   .mainFront {
   bottom: -1%;
