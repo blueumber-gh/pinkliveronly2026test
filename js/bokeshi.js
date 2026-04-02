@@ -41,13 +41,20 @@ window.addEventListener("resize", resizeCanvas);
 for (let i = 0; i < Bokeshi.config.num_spheres; i++) {
   let x = getRandom(0, window.innerWidth);
   let y = getRandom(0, window.innerHeight);
-  let r = getRandom(10, 70);
+
+  // ⭐ 手機縮小光斑尺寸（關鍵）
+  let r = isMobile
+    ? getRandom(8, 40)   // 手機：比較小
+    : getRandom(10, 70); // 桌機：維持原本
 
   Bokeshi.spheres[i] = new Sphere(x, y, r);
+
   Bokeshi.direction[i] = roundInt(getRandom(1, 8));
+
   Bokeshi.colors[i] = roundInt(
     getRandom(0, Bokeshi.config.color_set.num_colors)
   );
+
   Bokeshi.blur[i] = roundInt(
     getRandom(Bokeshi.config.blur_min, Bokeshi.config.blur_max)
   );
