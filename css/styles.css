@@ -279,6 +279,10 @@ font-size:22px;
 cursor:pointer;
 }
 
+.shrink .menuBtn{
+color:#4565A6;
+}
+
 /* ---------------- */
 /* Mobile Menu */
 /* ---------------- */
