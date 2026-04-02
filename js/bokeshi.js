@@ -29,6 +29,10 @@ const FPS = Bokeshi.config.FPS;
 var canva = document.getElementById(Bokeshi.id);
 var context = canva.getContext("2d");
 
+// ⭐ 裝置判斷（關鍵）
+const isMobile = window.innerWidth < 768;
+const dpr = window.devicePixelRatio || 1;
+
 // 初始化 canvas 尺寸
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
@@ -49,15 +53,15 @@ for (let i = 0; i < Bokeshi.config.num_spheres; i++) {
   );
 }
 
-// 速度
+// ⭐ 手機降速（關鍵）
 var velocity_x = getRandom(
-  Bokeshi.config.velocity_x_min,
-  Bokeshi.config.velocity_x_max
+  isMobile ? 0.15 : Bokeshi.config.velocity_x_min,
+  isMobile ? 0.6 : Bokeshi.config.velocity_x_max
 );
 
 var velocity_y = getRandom(
-  Bokeshi.config.velocity_y_min,
-  Bokeshi.config.velocity_y_max
+  isMobile ? 0.15 : Bokeshi.config.velocity_y_min,
+  isMobile ? 0.8 : Bokeshi.config.velocity_y_max
 );
 
 // 主迴圈
@@ -112,24 +116,21 @@ function update() {
   }
 }
 
-// 渲染（重點修改在這）
+// 渲染
 function render() {
-  // 🔥 清除畫面（透明）
   context.clearRect(0, 0, canva.width, canva.height);
 
-  // 🔥 光疊加效果（讓光更亮）
   context.globalCompositeOperation = "screen";
 
   for (let i = 0; i < Bokeshi.config.num_spheres; i++) {
     Bokeshi.spheres[i].draw(
       "rgba(" +
         Bokeshi.config.color_set.colors[Bokeshi.colors[i]] +
-        ",0.2)", // 光強度（你可以調）
+        ",0.2)",
       Bokeshi.blur[i]
     );
   }
 
-  // 還原（避免影響其他 canvas）
   context.globalCompositeOperation = "source-over";
 }
 
@@ -141,7 +142,10 @@ function Sphere(x, y, r) {
 }
 
 Sphere.prototype.draw = function (color, blur) {
-  context.filter = "blur(" + blur + "px)";
+  // ⭐ 手機 blur 強化（關鍵）
+  let finalBlur = isMobile ? blur * dpr : blur;
+
+  context.filter = "blur(" + finalBlur + "px)";
   context.fillStyle = color;
   context.beginPath();
   context.arc(this.x_pos, this.y_pos, this.radius, 0, Math.PI * 2);
