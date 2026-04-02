@@ -1,0 +1,164 @@
+/**
+ * Bokeshi (modified)
+ * Transparent bokeh effect
+ */
+
+var Bokeshi = {
+  id: "bokeshi",
+  config: {
+    FPS: 60,
+    num_spheres: 25,
+    color_set: {
+      num_colors: 3,
+      colors: ["250,205,191", "250,205,191", "250,205,191"]
+    },
+    velocity_x_min: 0.3,
+    velocity_x_max: 1.2,
+    velocity_y_min: 0.3,
+    velocity_y_max: 1.5,
+    blur_min: 3,
+    blur_max: 12
+  },
+  spheres: [],
+  direction: [],
+  colors: [],
+  blur: []
+};
+
+const FPS = Bokeshi.config.FPS;
+var canva = document.getElementById(Bokeshi.id);
+var context = canva.getContext("2d");
+
+// 初始化 canvas 尺寸
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+// 建立光斑
+for (let i = 0; i < Bokeshi.config.num_spheres; i++) {
+  let x = getRandom(0, window.innerWidth);
+  let y = getRandom(0, window.innerHeight);
+  let r = getRandom(10, 70);
+
+  Bokeshi.spheres[i] = new Sphere(x, y, r);
+  Bokeshi.direction[i] = roundInt(getRandom(1, 8));
+  Bokeshi.colors[i] = roundInt(
+    getRandom(0, Bokeshi.config.color_set.num_colors)
+  );
+  Bokeshi.blur[i] = roundInt(
+    getRandom(Bokeshi.config.blur_min, Bokeshi.config.blur_max)
+  );
+}
+
+// 速度
+var velocity_x = getRandom(
+  Bokeshi.config.velocity_x_min,
+  Bokeshi.config.velocity_x_max
+);
+
+var velocity_y = getRandom(
+  Bokeshi.config.velocity_y_min,
+  Bokeshi.config.velocity_y_max
+);
+
+// 主迴圈
+var BokeshiLoop = setInterval(function () {
+  update();
+  render();
+}, 1000 / FPS);
+
+// 更新位置
+function update() {
+  for (let i = 0; i < Bokeshi.config.num_spheres; i++) {
+    switch (Bokeshi.direction[i]) {
+      case 1:
+        Bokeshi.spheres[i].x_pos -= velocity_x;
+        break;
+      case 2:
+        Bokeshi.spheres[i].x_pos -= velocity_x;
+        Bokeshi.spheres[i].y_pos -= velocity_y;
+        break;
+      case 3:
+        Bokeshi.spheres[i].y_pos -= velocity_y;
+        break;
+      case 4:
+        Bokeshi.spheres[i].x_pos += velocity_x;
+        Bokeshi.spheres[i].y_pos -= velocity_y;
+        break;
+      case 5:
+        Bokeshi.spheres[i].x_pos += velocity_x;
+        break;
+      case 6:
+        Bokeshi.spheres[i].x_pos += velocity_x;
+        Bokeshi.spheres[i].y_pos += velocity_y;
+        break;
+      case 7:
+        Bokeshi.spheres[i].y_pos += velocity_y;
+        break;
+      case 8:
+        Bokeshi.spheres[i].x_pos -= velocity_x;
+        Bokeshi.spheres[i].y_pos += velocity_y;
+        break;
+    }
+
+    // 超出畫面就換方向
+    if (
+      Bokeshi.spheres[i].x_pos > window.innerWidth ||
+      Bokeshi.spheres[i].x_pos < 0 ||
+      Bokeshi.spheres[i].y_pos > window.innerHeight ||
+      Bokeshi.spheres[i].y_pos < 0
+    ) {
+      Bokeshi.direction[i] = roundInt(getRandom(1, 8));
+    }
+  }
+}
+
+// 渲染（重點修改在這）
+function render() {
+  // 🔥 清除畫面（透明）
+  context.clearRect(0, 0, canva.width, canva.height);
+
+  // 🔥 光疊加效果（讓光更亮）
+  context.globalCompositeOperation = "screen";
+
+  for (let i = 0; i < Bokeshi.config.num_spheres; i++) {
+    Bokeshi.spheres[i].draw(
+      "rgba(" +
+        Bokeshi.config.color_set.colors[Bokeshi.colors[i]] +
+        ",0.2)", // 光強度（你可以調）
+      Bokeshi.blur[i]
+    );
+  }
+
+  // 還原（避免影響其他 canvas）
+  context.globalCompositeOperation = "source-over";
+}
+
+// Sphere
+function Sphere(x, y, r) {
+  this.x_pos = x;
+  this.y_pos = y;
+  this.radius = r;
+}
+
+Sphere.prototype.draw = function (color, blur) {
+  context.filter = "blur(" + blur + "px)";
+  context.fillStyle = color;
+  context.beginPath();
+  context.arc(this.x_pos, this.y_pos, this.radius, 0, Math.PI * 2);
+  context.fill();
+};
+
+// resize
+function resizeCanvas() {
+  canva.width = window.innerWidth;
+  canva.height = window.innerHeight;
+}
+
+// 工具
+function roundInt(value) {
+  return Math.round(value);
+}
+
+function getRandom(min, max) {
+  return Math.random() * (max - min) + min;
+}
